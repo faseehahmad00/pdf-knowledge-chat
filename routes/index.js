@@ -4,7 +4,7 @@ import dotenv from 'dotenv/config';
 import { loadPDF } from '../services/readingService.js';
 import { generateEmbedding } from '../services/embeddingService.js';
 import { splitText } from '../utils/utils.js';
-import { getPineconeIndex, alreadyProcessed, saveChunksToPinecone } from '../services/pineconeService.js';
+import { getCachedIndex, alreadyProcessed, saveChunksToPinecone } from '../services/pineconeService.js';
 import { getAnswerFromContext, summarizeAndRephrase } from '../services/groqService.js';
 import { traceable } from "langsmith/traceable";
 import { Client } from "langsmith";
@@ -20,7 +20,7 @@ router.get('/process-pdf', async (req, res) => {
     const indexName = req.query.indexName || 'manual-embeddings';
     const text = await loadPDF();
     const chunks = splitText(text);
-    const index = await getPineconeIndex(indexName);
+    const index = await getCachedIndex(indexName); // Use cached index
     const exists = await alreadyProcessed(index);
     if (exists) {
       return res.send(`Embeddings already exist in Pinecone for index ${indexName}. Skipping processing.`);
@@ -40,7 +40,7 @@ router.post('/query', async (req, res) => {
       return res.status(400).json({ error: 'Query text is required.' });
     }
     const queryEmbedding = await generateEmbedding(query);
-    const index = await getPineconeIndex(indexName);
+    const index = await getCachedIndex(indexName); // Use cached index
     const results = await index.query({
       topK: 5,
       vector: queryEmbedding,
@@ -69,7 +69,7 @@ router.post('/chat', traceable(async (req, res) => {
 
     // Trace Pinecone operations
     const index = await traceable(
-      async (name) => await getPineconeIndex(name),
+      async (name) => await getCachedIndex(name),
       { name: "get_pinecone_index", tags: ["pinecone"] }
     )(indexName);
 

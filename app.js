@@ -7,6 +7,7 @@ import cors from 'cors';
 
 import indexRouter from './routes/index.js';
 import dotenv from 'dotenv';
+import { getCachedIndex } from './services/pineconeService.js';
 
 const app = express();
 
@@ -42,5 +43,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+getCachedIndex('handbook');
 
 export default app;
