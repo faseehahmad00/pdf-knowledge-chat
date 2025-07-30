@@ -1,10 +1,9 @@
 import { Pinecone } from '@pinecone-database/pinecone';
 
-export async function getPineconeIndex() {
+export async function getPineconeIndex(indexName = 'manual-embeddings') {
   const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY,
   });
-  const indexName = 'manual-embeddings';
   const result = await pinecone.listIndexes();
   if (!result.indexes.includes(indexName)) {
     try {

@@ -28,4 +28,5 @@ env/
 Thumbs.db
 
 # Misc
-public/manual.pdf 
+public/manual*.pdf 
+.vscode
